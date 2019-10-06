@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="vtt.min.js"></script>
+
+
+    <title>Document</title>
+</head>
+
+<body>
+    <script>
+        var vtt = "WEBVTT\n\nID\n00:00.000 --> 00:02.000\nhello world!",
+            parser = new WebVTT.Parser(window, WebVTT.StringDecoder()),
+            cues = [],
+            regions = [];
+        parser.oncue = function (cue) {
+            cues.push(cue);
+        };
+        parser.onregion = function (region) {
+            regions.push(region);
+        }
+        parser.parse(vtt);
+        parser.flush();
+
+        var div = WebVTT.convertCueToDOMTree(window, cues[0].text);
+        var divs = WebVTT.processCues(window, cues, document.getElementById("overlay"));
+         
+         console.log(cues);
+    </script>
+    <div id="overlay" style="position: relative; width: 300px; height: 150px"></div>
+</body>
+
+</html>

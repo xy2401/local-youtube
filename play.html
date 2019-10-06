@@ -1,0 +1,268 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <style>
+    #playListNav {
+      width: 19%;
+      margin: 0.5em 0;
+      float: left;
+      height: 95vh;
+      overflow-y: scroll;
+    }
+
+    #playListNav a {
+      display: block;
+      margin: 0.5em 0;
+    }
+
+    video {
+      width: 79%;
+    }
+
+    #vttDiv1,
+    #vttDiv2 {
+      position: relative;
+    }
+
+
+    #vttDiv1>div,
+    #vttDiv2>div {
+      position: absolute;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px dashed #333;
+      text-align: right;
+      width: 100%;
+      position: absolute;
+      opacity: 0.5;
+    }
+
+    hr:after {
+      position: relative;
+      content: attr(data-content);
+      position: relative;
+    }
+  </style>
+</head>
+
+
+<body>
+
+
+
+  <nav id='playListNav'>
+
+
+  </nav>
+  <div style="width: 79%; float: left;">
+    <button id='showAllVTTB' onclick="showAllVTT()">show all vtt</button>
+    <!-- 开发者按钮 -->
+    <button onclick="checkPlayList()">checkPlayList</button>
+    
+    
+    
+    <br>
+    
+
+    <video id='video' controls>
+
+      <source id='source1' src="" type="video/webm">
+      <source id='source2' src="" type="video/mp4">
+      <source id='source3' src="" type="video/mp4">
+      <track id='track1' kind="subtitles" src="" srclang="en" label="English">
+      <track id='track2' default kind="subtitles" src="" srclang="zh-Hans" label="简体中文">
+
+    </video>
+
+    <div>
+
+      <details>
+        <summary>info</summary>
+
+        <strong>upload_date:</strong><span id='info_upload_date'></span>
+        <strong>view_count:</strong><span id='info_view_count'></span>
+        <strong>like_count:</strong><span id='info_like_count'></span>
+        <strong>dislike_count:</strong><span id='info_dislike_count'></span><br>
+        <strong>title:</strong><span id='info_title'></span><br>
+        <strong>description:</strong><span id='info_description'></span><br>
+        <strong>categories:</strong><span id='info_categories'></span><br>
+        <strong>tags:</strong><span id='info_tags'></span><br>
+
+        <a id='channel_url'>channel_url</a> &nbsp;&nbsp;
+        <a id='uploader'>uploader</a> &nbsp;&nbsp;
+        <a id='webpage_url'>webpage_url</a> &nbsp;&nbsp;
+        <a id='info_playlist_id'>playlist</a>
+
+      </details>
+
+      <br>
+      <br>
+      <!-- <a id='href0'>info.json</a>&nbsp;&nbsp; -->
+      <a id='href1'>English.vtt</a>&nbsp;&nbsp;
+      <a id='href2'>简体中文.vtt</a>
+    </div>
+
+
+    <details>
+      <summary>vtt textarea</summary>
+      <textarea id='textarea1' style="width: 49%;height: 80vh;"></textarea>
+      <textarea id='textarea2' style="width: 49%;height: 80vh;"></textarea>
+    </details>
+    <details open>
+      <summary>vtt div</summary>
+      <div id='vttDiv1' style="width: 49%; float: left"> </div>
+      <div id='vttDiv2' style="width: 49%; float: right"> </div>
+    </details>
+
+
+  </div>
+
+
+
+  <script src="vtt.min.js"></script>
+  <script>
+
+
+    let playlist = [];//播放列表
+    let vttPath, videoPath, videoFlag = false;//字幕所在路径 视频所在路径
+    let vtt1, vtt2, cues1 = [], cues2 = [];//字幕1 2
+
+
+    let parser1 = new WebVTT.Parser(window, WebVTT.StringDecoder());
+    parser1.oncue = (cue) => cues1.push(cue);
+    let parser2 = new WebVTT.Parser(window, WebVTT.StringDecoder());
+    parser2.oncue = (cue) => cues2.push(cue);
+
+    const load = async () => {
+
+      //play.html?playlist=../local-youtube-vtt/IntelliJ IDEA.Tutorials/
+      var parsedUrl = new URL(window.location.href);
+      vttPath = parsedUrl.searchParams.get("playlist");
+      videoPath = vttPath.replace('/local-youtube-vtt/', '/local-youtube-video/');
+
+      var playlistTxt = await fetch(vttPath + "playlist.txt");
+      playlistTxt = await playlistTxt.text();
+
+      videoFlag = (await fetch(videoPath)).status == 200;
+      if (!videoFlag) {
+        video.style.display = "none";
+        showAllVTTB.style.display = "none";
+      }
+
+      playlistTxt.split("\n").filter(playlistJson => !/^\s*$/.test(playlistJson)).forEach(playlistJson => {
+        console.log(playlistJson);
+        playlist.push(JSON.parse(playlistJson));
+      });
+      console.log(playlistTxt);
+
+
+      let playListNavHTML = '';
+      playlist.forEach((v, i) => {
+        playListNavHTML += `<a href="#${i}" title='${v.upload_date}'>${i} ${v.title}</a>  `;
+      });
+      playListNav.innerHTML = playListNavHTML;
+
+
+      changeV();
+
+    }
+    window.onload = load;
+
+    const changeV = async () => {
+      if (location.hash && location.hash.length > 1) {
+        let info = playlist[location.hash.substr(1)];
+        if (info) {
+          let name = info.title + "-" + info.id;
+          name = info._filename.substr(0, info._filename.lastIndexOf('.'));
+          name=encodeURIComponent(name); //fileName has #
+          if (videoFlag) {
+            //3种视频 2种字幕都怼上去再说
+            source1.src = videoPath + name + ".webm";
+            source2.src = videoPath + name + ".mp4";
+            source3.src = videoPath + name + ".mkv";
+            track1.src = vttPath + name + ".en.vtt";
+            track2.src = vttPath + name + ".zh-Hans.vtt";
+          }
+          vtt1 = await (await fetch(vttPath + name + ".en.vtt")).text();
+          vtt2 = await (await fetch(vttPath + name + ".zh-Hans.vtt")).text();
+          textarea1.value = vtt1;
+          textarea2.value = vtt2;
+
+          // href0.href = vttPath + name + ".info.json";
+          href1.href = vttPath + name + ".en.vtt";
+          href2.href = vttPath + name + ".zh-Hans.vtt";
+
+          updateVTT(parser1, cues1, vtt1, vttDiv1);
+          updateVTT(parser2, cues2, vtt2, vttDiv2);
+
+          //创建分钟风格线 n min
+          let lineNum = Math.ceil(cues1[cues1.length - 1].startTime / 60);
+
+          let html = "";
+          for (var i = 0; i <= lineNum; i++) {
+            html += `<hr style='top: ${i * 60}em;'  data-content="${i} min" title='${i} min'>`;
+          }
+          console.log(html);
+          vttDiv1.insertAdjacentHTML(`beforeend`, html);
+
+
+          // let vInfo = JSON.parse(await (await fetch(vttPath + name + ".info.json")).text());
+          let vInfo = info;
+
+          info_upload_date.innerHTML = vInfo.upload_date;
+          info_view_count.innerHTML = vInfo.view_count;
+          info_like_count.innerHTML = vInfo.like_count;
+          info_dislike_count.innerHTML = vInfo.dislike_count;
+          info_title.innerHTML = vInfo.title;
+          info_description.innerHTML = vInfo.description;
+          
+          info_categories.innerHTML = vInfo.categories.join("&nbsp;,&nbsp;");
+          info_tags.innerHTML = vInfo.tags.join("&nbsp;,&nbsp;");
+
+          channel_url.href = vInfo.channel_url;
+          webpage_url.href = vInfo.webpage_url;
+          uploader.href = vInfo.uploader_url;
+
+          info_playlist_id.href = "https://www.youtube.com/playlist?list=" + vInfo.playlist_id;
+
+          uploader.innerHTML = vInfo.uploader;
+        }
+      }
+      video.load();
+      video.play();
+    }
+    window.onhashchange = changeV;
+
+    function updateVTT(parser, cues, vtt, vttDiv) {
+      cues.length = 0;//清空
+      parser.parse(vtt);
+      vttDiv.innerHTML = '';
+      cues.forEach((cue, i) => {
+        let divDom = cue.getCueAsHTML();
+        divDom.title = `${i} : ${cue.startTime}-${cue.endTime}`;
+        divDom.style.top = cue.startTime + 'em';
+        vttDiv.append(divDom);
+      });
+    }
+
+    function showAllVTT() {
+      //track1.mode = "showing";
+      //track2.mode = "showing";
+      video.textTracks[0].mode = "showing";
+      video.textTracks[1].mode = "showing";
+    }
+
+    function checkPlayList(){
+
+
+
+    }
+
+  </script>
+</body>
+
+</html>
