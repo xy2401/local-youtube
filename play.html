@@ -59,24 +59,22 @@
 
   </nav>
   <div style="width: 79%; float: left;">
-    <button id='showAllVTTB' onclick="showAllVTT()">show all vtt</button>
-    <!-- 开发者按钮 -->
-    <button onclick="checkPlayList()">checkPlayList</button>
-    
-    
-    
-    <br>
-    
 
-    <video id='video' controls>
+    <details open>
+      <summary>player</summary>
+      <button id='showAllVTTB' onclick="showAllVTT()">show all vtt</button>
+      <br>
+      <video id='video' controls>
 
-      <source id='source1' src="" type="video/webm">
-      <source id='source2' src="" type="video/mp4">
-      <source id='source3' src="" type="video/mp4">
-      <track id='track1' kind="subtitles" src="" srclang="en" label="English">
-      <track id='track2' default kind="subtitles" src="" srclang="zh-Hans" label="简体中文">
+        <source id='source1' src="" type="video/webm">
+        <source id='source2' src="" type="video/mp4">
+        <source id='source3' src="" type="video/mp4">
+        <track id='track1' kind="subtitles" src="" srclang="en" label="English">
+        <track id='track2' default kind="subtitles" src="" srclang="zh-Hans" label="简体中文">
 
-    </video>
+      </video>
+    </details>
+
 
     <div>
 
@@ -105,6 +103,14 @@
       <a id='href1'>English.vtt</a>&nbsp;&nbsp;
       <a id='href2'>简体中文.vtt</a>
     </div>
+
+    <!-- 开发者按钮 -->
+    <!--  -->
+    <details open style="display: none">
+      <summary>dev tool</summary>
+      <button onclick="checkPlayList()">checkPlayList</button>
+      <pre id='devPre'></pre>
+    </details>
 
 
     <details>
@@ -178,7 +184,7 @@
         if (info) {
           let name = info.title + "-" + info.id;
           name = info._filename.substr(0, info._filename.lastIndexOf('.'));
-          name=encodeURIComponent(name); //fileName has #
+          name = encodeURIComponent(name); //fileName has #
           if (videoFlag) {
             //3种视频 2种字幕都怼上去再说
             source1.src = videoPath + name + ".webm";
@@ -219,7 +225,7 @@
           info_dislike_count.innerHTML = vInfo.dislike_count;
           info_title.innerHTML = vInfo.title;
           info_description.innerHTML = vInfo.description;
-          
+
           info_categories.innerHTML = vInfo.categories.join("&nbsp;,&nbsp;");
           info_tags.innerHTML = vInfo.tags.join("&nbsp;,&nbsp;");
 
@@ -256,7 +262,51 @@
       video.textTracks[1].mode = "showing";
     }
 
-    function checkPlayList(){
+    async function checkPlayList() {
+
+      let vNull = [];//不存在的视频
+      let vtt1Null = [];//不存在的字幕
+      let vtt2Null = [];//不存在的字幕
+
+      let HTML = '';
+
+      HTML += `playlist.length:${playlist.length}\n\n`;
+
+
+
+      for (let i = 0; i < playlist.length; i++) {
+        let v = playlist[i];
+
+        let name = v._filename.substr(0, v._filename.lastIndexOf('.'));
+        name = encodeURIComponent(name); //fileName has #
+
+        let vFlag = (await fetch(videoPath + name + ".webm")).status == 200
+          || (await fetch(videoPath + name + ".mp4")).status == 200
+          || (await fetch(videoPath + name + ".mkv")).status == 200;
+        //json里面文件名是否存在
+        let vFlag2 = (await fetch(videoPath + v._filename)).status == 200;
+
+        //字幕是否存在
+        let vtt1Flag = (await fetch(vttPath + name + ".en.vtt")).status == 200;
+        let vtt2Flag = (await fetch(vttPath + name + ".zh-Hans.vtt")).status == 200;
+
+        HTML += `${i} vFlag:${vFlag}  vFlag2:${vFlag2}  vtt1Flag:${vtt1Flag}  vtt2Flag:${vtt2Flag} ${v._filename} playlist.length:${playlist.length}\n`;
+
+        vFlag || vNull.push(v.id);
+        vtt1Flag || vtt1Null.push(v.id);
+        vtt2Flag || vtt2Null.push(v.id);
+
+      }
+
+      HTML += `\n\n`;
+
+      HTML += `vNull.length:${vNull.length}\n${vNull.join(' ')}\n`;
+      HTML += `vtt1Null.length:${vtt1Null.length}\n${vtt1Null.join(' ')}\n`;
+      HTML += `vtt2Null.length:${vtt2Null.length}\n${vtt2Null.join(' ')}\n`;
+
+
+      devPre.innerHTML = HTML;
+
 
 
 
