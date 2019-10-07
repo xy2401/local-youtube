@@ -58,11 +58,12 @@
 
 
   </nav>
-  <div style="width: 79%; float: left;">
+  <div id='contentDiv' style="width: 79%; float: left;">
 
     <details open>
       <summary>player</summary>
       <button id='showAllVTTB' onclick="showAllVTT()">show all vtt</button>
+      <button id='hideNavB' onclick="hideNav()">hide nav</button>
       <br>
       <video id='video' controls>
 
@@ -262,6 +263,16 @@
       video.textTracks[1].mode = "showing";
     }
 
+    function hideNav() {
+      if (playListNav.style.display == 'none') {
+        playListNav.style.display = ''
+        contentDiv.style.width = '79%';
+      } else {
+        playListNav.style.display = 'none'
+        contentDiv.style.width = '100%';
+      }
+    }
+
     async function checkPlayList() {
 
       let vNull = [];//不存在的视频
@@ -304,11 +315,7 @@
       HTML += `vtt1Null.length:${vtt1Null.length}\n${vtt1Null.join(' ')}\n`;
       HTML += `vtt2Null.length:${vtt2Null.length}\n${vtt2Null.join(' ')}\n`;
 
-
       devPre.innerHTML = HTML;
-
-
-
 
     }
 
