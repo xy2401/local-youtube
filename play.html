@@ -301,7 +301,7 @@
         let vtt1Flag = (await fetch(vttPath + name + ".en.vtt")).status == 200;
         let vtt2Flag = (await fetch(vttPath + name + ".zh-Hans.vtt")).status == 200;
 
-        HTML += `${i} vFlag:${vFlag}  vFlag2:${vFlag2}  vtt1Flag:${vtt1Flag}  vtt2Flag:${vtt2Flag} ${v._filename} playlist.length:${playlist.length}\n`;
+        HTML += `${i} vFlag:${vFlag}  vFlag2:${vFlag2}  vtt1Flag:${vtt1Flag}  vtt2Flag:${vtt2Flag} ${v._filename} \n`;
 
         vFlag || vNull.push(v.id);
         vtt1Flag || vtt1Null.push(v.id);
