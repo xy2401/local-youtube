@@ -283,7 +283,7 @@
 
       HTML += `playlist.length:${playlist.length}\n\n`;
 
-
+      let mv = '';
 
       for (let i = 0; i < playlist.length; i++) {
         let v = playlist[i];
@@ -291,11 +291,15 @@
         let name = v._filename.substr(0, v._filename.lastIndexOf('.'));
         name = encodeURIComponent(name); //fileName has #
 
-        let vFlag = (await fetch(videoPath + name + ".webm")).status == 200
-          || (await fetch(videoPath + name + ".mp4")).status == 200
-          || (await fetch(videoPath + name + ".mkv")).status == 200;
+        //使用 head 而不必加载所有数据
+        // [HEAD - HTTP | MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/HEAD)
+        //[How to fetch (using Fetch API) only headers in Javascript, not the whole content? - Stack Overflow](https://stackoverflow.com/questions/47240975/how-to-fetch-using-fetch-api-only-headers-in-javascript-not-the-whole-content)
+
+        let vFlag = (await fetch(videoPath + name + ".webm", { method: 'HEAD' })).status == 200
+          || (await fetch(videoPath + name + ".mp4", { method: 'HEAD' })).status == 200
+          || (await fetch(videoPath + name + ".mkv", { method: 'HEAD' })).status == 200;
         //json里面文件名是否存在
-        let vFlag2 = (await fetch(videoPath + v._filename)).status == 200;
+        let vFlag2 = (await fetch(videoPath + v._filename, { method: 'HEAD' })).status == 200;
 
         //字幕是否存在
         let vtt1Flag = (await fetch(vttPath + name + ".en.vtt")).status == 200;
@@ -303,10 +307,12 @@
 
         HTML += `${i} vFlag:${vFlag}  vFlag2:${vFlag2}  vtt1Flag:${vtt1Flag}  vtt2Flag:${vtt2Flag} ${v._filename} \n`;
 
+        
         vFlag || vNull.push(v.id);
         vtt1Flag || vtt1Null.push(v.id);
         vtt2Flag || vtt2Null.push(v.id);
 
+        vFlag || ( mv += `mv *${v.id}* "${v._filename}" \n`);//可能文件要重命名
       }
 
       HTML += `\n\n`;
@@ -314,6 +320,8 @@
       HTML += `vNull.length:${vNull.length}\n${vNull.join(' ')}\n`;
       HTML += `vtt1Null.length:${vtt1Null.length}\n${vtt1Null.join(' ')}\n`;
       HTML += `vtt2Null.length:${vtt2Null.length}\n${vtt2Null.join(' ')}\n`;
+
+      HTML += `\n\n${mv}\n\n`;
 
       devPre.innerHTML = HTML;
 
