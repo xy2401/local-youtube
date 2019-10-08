@@ -151,7 +151,7 @@
       vttPath = parsedUrl.searchParams.get("playlist");
       videoPath = vttPath.replace('/local-youtube-vtt/', '/local-youtube-video/');
 
-      var playlistTxt = await fetch(vttPath + "playlist.txt");
+      var playlistTxt = await fetch(vttPath + "playlist.lite.txt");
       playlistTxt = await playlistTxt.text();
 
       videoFlag = (await fetch(videoPath)).status == 200;
