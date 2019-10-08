@@ -107,7 +107,7 @@
 
     <!-- 开发者按钮 -->
     <!--  -->
-    <details open style="display: none">
+    <details id='devTool' open style="display: none">
       <summary>dev tool</summary>
       <button onclick="checkPlayList()">checkPlayList</button>
       <pre id='devPre'></pre>
@@ -158,6 +158,10 @@
       if (!videoFlag) {
         video.style.display = "none";
         showAllVTTB.style.display = "none";
+      }
+
+      if (parsedUrl.searchParams.has("debug")) {
+        devTool.style.display = 'block';
       }
 
       playlistTxt.split("\n").filter(playlistJson => !/^\s*$/.test(playlistJson)).forEach(playlistJson => {
@@ -283,7 +287,7 @@
 
       HTML += `playlist.length:${playlist.length}\n\n`;
 
-      let mv = '';
+      let mv = '', mv2 = '';
 
       for (let i = 0; i < playlist.length; i++) {
         let v = playlist[i];
@@ -294,10 +298,11 @@
         //使用 head 而不必加载所有数据
         // [HEAD - HTTP | MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/HEAD)
         //[How to fetch (using Fetch API) only headers in Javascript, not the whole content? - Stack Overflow](https://stackoverflow.com/questions/47240975/how-to-fetch-using-fetch-api-only-headers-in-javascript-not-the-whole-content)
+        let vWebmFlag = (await fetch(videoPath + name + ".webm", { method: 'HEAD' })).status == 200;
+        let vMp4Flag = (await fetch(videoPath + name + ".mp4", { method: 'HEAD' })).status == 200;
+        let vMkvFlag = (await fetch(videoPath + name + ".mkv", { method: 'HEAD' })).status == 200;
 
-        let vFlag = (await fetch(videoPath + name + ".webm", { method: 'HEAD' })).status == 200
-          || (await fetch(videoPath + name + ".mp4", { method: 'HEAD' })).status == 200
-          || (await fetch(videoPath + name + ".mkv", { method: 'HEAD' })).status == 200;
+        let vFlag = vWebmFlag || vMp4Flag || vMkvFlag;
         //json里面文件名是否存在
         let vFlag2 = (await fetch(videoPath + v._filename, { method: 'HEAD' })).status == 200;
 
@@ -307,12 +312,15 @@
 
         HTML += `${i} vFlag:${vFlag}  vFlag2:${vFlag2}  vtt1Flag:${vtt1Flag}  vtt2Flag:${vtt2Flag} ${v._filename} \n`;
 
-        
+
         vFlag || vNull.push(v.id);
         vtt1Flag || vtt1Null.push(v.id);
         vtt2Flag || vtt2Null.push(v.id);
 
-        vFlag || ( mv += `mv *${v.id}* "${v._filename}" \n`);//可能文件要重命名
+        let extension = vWebmFlag ? 'webm' : vMkvFlag ? 'mkv' : 'mp4';
+
+        mv += `mv *${v.id}* "${name}.${extension}" \n`;//可能文件要重命名
+        mv2 += `mv *${v.id}* "${playlist.length-i}  ${name}.${extension}" \n`;//可能文件要重命名
       }
 
       HTML += `\n\n`;
@@ -322,6 +330,7 @@
       HTML += `vtt2Null.length:${vtt2Null.length}\n${vtt2Null.join(' ')}\n`;
 
       HTML += `\n\n${mv}\n\n`;
+      HTML += `\n\n${mv2}\n\n`;
 
       devPre.innerHTML = HTML;
 
