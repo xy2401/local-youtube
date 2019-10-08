@@ -26,6 +26,8 @@ youtube-dl -i https://www.youtube.com/playlist?list=PLPZy-hmwOdEX7M4fJRlPjFMpQBF
 ## 使用代理下载
 youtube-dl --proxy=192.168.0.2:10809 -f  bestvideo+bestaudio https://www.youtube.com/playlist?list=PLgGXSWYM2FpPw8rV0tZoMiJYSCiLhPnOc
 
+##删除两个大节点
+cat playlist.txt | sed 's/, "formats": \[.*\], "is_live"/, "is_live"/g' |sed 's/, "requested_formats": \[.*\], "format"/, "format"/g' > playlist.lite.txt
 
 ```
 
