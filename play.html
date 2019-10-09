@@ -60,10 +60,10 @@
   </nav>
   <div id='contentDiv' style="width: 79%; float: left;">
 
-    <details open>
+    <details open id='playerD'>
       <summary>player</summary>
       <button id='showAllVTTB' onclick="showAllVTT()">show all vtt</button>
-      <button id='hideNavB' onclick="hideNav()">hide nav</button>
+
       <br>
       <video id='video' controls>
 
@@ -77,33 +77,28 @@
     </details>
 
 
-    <div>
 
-      <details>
-        <summary>info</summary>
+    <details open>
+      <summary>info</summary>
+      <button id='hideNavB' onclick="hideNav()">hide nav</button><br>
+      <strong>upload_date:</strong><span id='info_upload_date'></span>
+      <strong>view_count:</strong><span id='info_view_count'></span>
+      <strong>like_count:</strong><span id='info_like_count'></span>
+      <strong>dislike_count:</strong><span id='info_dislike_count'></span><br>
+      <strong>title:</strong><span id='info_title'></span><br>
+      <strong>description:</strong><span id='info_description'></span><br>
+      <strong>categories:</strong><span id='info_categories'></span><br>
+      <strong>tags:</strong><span id='info_tags'></span><br>
 
-        <strong>upload_date:</strong><span id='info_upload_date'></span>
-        <strong>view_count:</strong><span id='info_view_count'></span>
-        <strong>like_count:</strong><span id='info_like_count'></span>
-        <strong>dislike_count:</strong><span id='info_dislike_count'></span><br>
-        <strong>title:</strong><span id='info_title'></span><br>
-        <strong>description:</strong><span id='info_description'></span><br>
-        <strong>categories:</strong><span id='info_categories'></span><br>
-        <strong>tags:</strong><span id='info_tags'></span><br>
-
-        <a id='channel_url'>channel_url</a> &nbsp;&nbsp;
-        <a id='uploader'>uploader</a> &nbsp;&nbsp;
-        <a id='webpage_url'>webpage_url</a> &nbsp;&nbsp;
-        <a id='info_playlist_id'>playlist</a>
-
-      </details>
-
-      <br>
-      <br>
-      <!-- <a id='href0'>info.json</a>&nbsp;&nbsp; -->
+      <a id='channel_url'>channel_url</a> &nbsp;&nbsp;
+      <a id='uploader'>uploader</a> &nbsp;&nbsp;
+      <a id='webpage_url'>webpage_url</a> &nbsp;&nbsp;
+      <a id='info_playlist_id'>playlist</a>&nbsp;&nbsp;
       <a id='href1'>English.vtt</a>&nbsp;&nbsp;
       <a id='href2'>简体中文.vtt</a>
-    </div>
+
+    </details>
+
 
     <!-- 开发者按钮 -->
     <!--  -->
@@ -156,8 +151,9 @@
 
       videoFlag = (await fetch(videoPath)).status == 200;
       if (!videoFlag) {
-        video.style.display = "none";
-        showAllVTTB.style.display = "none";
+        playerD.style.display = "none";
+        // video.style.display = "none";
+        // showAllVTTB.style.display = "none";
       }
 
       if (parsedUrl.searchParams.has("debug")) {
@@ -254,8 +250,10 @@
       vttDiv.innerHTML = '';
       cues.forEach((cue, i) => {
         let divDom = cue.getCueAsHTML();
+        divDom.dataset.startTime = cue.startTime;
         divDom.title = `${i} : ${cue.startTime}-${cue.endTime}`;
         divDom.style.top = cue.startTime + 'em';
+        divDom.addEventListener('dblclick', e => video.currentTime = this.dataset.startTime);
         vttDiv.append(divDom);
       });
     }
@@ -320,7 +318,7 @@
         let extension = vWebmFlag ? 'webm' : vMkvFlag ? 'mkv' : 'mp4';
 
         mv += `mv *${v.id}* "${name}.${extension}" \n`;//可能文件要重命名
-        mv2 += `mv *${v.id}* "${playlist.length-i}  ${name}.${extension}" \n`;//可能文件要重命名
+        mv2 += `mv *${v.id}* "${playlist.length - i}  ${name}.${extension}" \n`;//可能文件要重命名
       }
 
       HTML += `\n\n`;
