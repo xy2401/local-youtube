@@ -17,19 +17,21 @@
       margin: 0.5em 0;
     }
 
-    video {
+    /* video {
       width: 79%;
-    }
+    } */
 
     #vttDiv1,
     #vttDiv2 {
       position: relative;
+      z-index: -10;
     }
 
 
     #vttDiv1>div,
     #vttDiv2>div {
       position: absolute;
+
     }
 
     hr {
@@ -62,9 +64,7 @@
 
     <details open id='playerD'>
       <summary>player</summary>
-      <button id='showAllVTTB' onclick="showAllVTT()">show all vtt</button>
 
-      <br>
       <video id='video' controls>
 
         <source id='source1' src="" type="video/webm">
@@ -74,6 +74,8 @@
         <track id='track2' default kind="subtitles" src="" srclang="zh-Hans" label="简体中文">
 
       </video>
+      <button id='showAllVTTB' onclick="showAllVTT()">show all vtt</button>
+      width:<input type="range" onchange="video.style.width=this.value+'%'">
     </details>
 
 
@@ -176,6 +178,9 @@
 
       changeV();
 
+
+      setInterval(updateTimeline, 1000);
+
     }
     window.onload = load;
 
@@ -213,6 +218,7 @@
           for (var i = 0; i <= lineNum; i++) {
             html += `<hr style='top: ${i * 60}em;'  data-content="${i} min" title='${i} min'>`;
           }
+          html += `<hr id='nowHr' style='width:90%;top: 0em;'  data-content="<--now" title='now'>`;
           console.log(html);
           vttDiv1.insertAdjacentHTML(`beforeend`, html);
 
@@ -241,6 +247,7 @@
       }
       video.load();
       video.play();
+
     }
     window.onhashchange = changeV;
 
@@ -332,6 +339,16 @@
 
       devPre.innerHTML = HTML;
 
+    }
+    //更新字幕位于视频的时间轴
+    function updateTimeline() {
+      if (!video.paused) { 
+        nowHr.style['margin-top'] = `${video.currentTime}em`;
+        if (video.currentTime % 10 < 1) { 
+          vttDiv1.style['margin-top'] = `-${video.currentTime}em`;
+          vttDiv2.style['margin-top'] = `-${video.currentTime}em`;
+        }
+      }
     }
 
   </script>
