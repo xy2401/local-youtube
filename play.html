@@ -253,7 +253,7 @@
         divDom.dataset.startTime = cue.startTime;
         divDom.title = `${i} : ${cue.startTime}-${cue.endTime}`;
         divDom.style.top = cue.startTime + 'em';
-        divDom.addEventListener('dblclick', e => video.currentTime = this.dataset.startTime);
+        divDom.addEventListener('dblclick', function (e) { video.currentTime = this.dataset.startTime; });
         vttDiv.append(divDom);
       });
     }
