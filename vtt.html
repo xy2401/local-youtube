@@ -5,33 +5,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script src="vtt.min.js"></script>
-
-
-    <title>Document</title>
+    <title>vtt list</title>
+    <style>
+        #dirI,
+        #fileI,
+        #keyI {
+            width: 20%;
+        }
+    </style>
 </head>
 
 <body>
-    <script>
-        var vtt = "WEBVTT\n\nID\n00:00.000 --> 00:02.000\nhello world!",
-            parser = new WebVTT.Parser(window, WebVTT.StringDecoder()),
-            cues = [],
-            regions = [];
-        parser.oncue = function (cue) {
-            cues.push(cue);
-        };
-        parser.onregion = function (region) {
-            regions.push(region);
-        }
-        parser.parse(vtt);
-        parser.flush();
 
-        var div = WebVTT.convertCueToDOMTree(window, cues[0].text);
-        var divs = WebVTT.processCues(window, cues, document.getElementById("overlay"));
-         
-         console.log(cues);
+    <div id='inputD'>
+
+        dir:<textarea id='dirI'></textarea>
+        file:<textarea id='fileI'></textarea>
+        key:<textarea id='keyI'> </textarea>
+        <input type="button" value="search" onclick="search()"><br>
+
+    </div>
+    <div id='resultD'>
+
+    </div>
+    <div id='vttD'>
+
+    </div>
+
+    <script src="vtt.min.js"></script>
+    <script>
+
+
+        let dirIValue = '', fileIValue = '';
+        let playlist = [];//播放列表
+        let playDirlist = [];//播放文件所在目录
+        let vtt1, vtt2, cues1 = [], cues2 = [];//字幕1 2
+        let parser1 = new WebVTT.Parser(window, WebVTT.StringDecoder());
+        parser1.oncue = (cue) => cues1.push(cue);
+        let parser2 = new WebVTT.Parser(window, WebVTT.StringDecoder());
+        parser2.oncue = (cue) => cues2.push(cue);
+
+        function search() {
+            loadVTT();
+
+
+        }
+        //加载字幕列表
+        async function loadVTT() {
+            if (dirIValue != dirI.value || fileIValue != fileI.value) {
+                playlist = [];
+                playDirlist = [];
+                //目录
+                dirIValue = dirI.value;
+                let dirs = dirIValue.split('\n').filter(s => s.length > 0);
+                for (var i = 0; i < dirs.length; i++) {
+                    var playlistTxt = await fetch(`../local-youtube-vtt/${dirs[i]}/playlist.lite.txt`);
+                    playlistTxt = await playlistTxt.text();
+                    playlistTxt.split("\n").filter(playlistJson => !/^\s*$/.test(playlistJson)).forEach(playlistJson => {
+                        console.log(playlistJson);
+                        playlist.push(JSON.parse(playlistJson));
+                        playDirlist.push(dirs[i]);
+                    });
+                }
+                //文件
+                fileIValue = fileI.value;
+                let files = fileIValue.split('\n').filter(s => s.length > 0);
+                if (files.length > 0) {//文件过滤
+                    playlist = playlist.filter(p => files.findIndex(f => p._filename.indexOf(f) >= 0) >= 0);
+                }
+                console.log('playlist ' + playlist.length);
+                playlist.forEach(p => console.log(p._filename));
+
+                let html = '';
+                for (let i = 0; i < playlist.length; i++) {
+                    let info = playlist[i];
+                    let name = info._filename.substr(0, info._filename.lastIndexOf('.'));
+
+                    vtt1 = await (await fetch(`../local-youtube-vtt/${playDirlist[i]}/${name}.en.vtt"`)).text();
+                    vtt2 = await (await fetch(`../local-youtube-vtt/${playDirlist[i]}/${name}.zh-Hans.vtt"`)).text();
+
+                    let details = document.createElement('details');
+                    let summary = document.createElement('summary');
+                    summary.textContent = name;
+                    details.open = true;
+                    let div = document.createElement('div');
+                    div.textContent = '234';
+
+                    details.append(summary);
+                    details.append(div);
+
+                    document.body.append(details);
+
+                    // updateVTT(parser1, cues1, vtt1, vttDiv1);
+                    // updateVTT(parser2, cues2, vtt2, vttDiv2);
+                    // cues1[0].getCueAsHTML().textContent;
+
+                }
+
+
+            }
+
+        }
+
+        function updateVTT(parser, cues, vtt, vttDiv) {
+            cues.length = 0;//清空
+            parser.parse(vtt);
+            vttDiv.innerHTML = '';
+            cues.forEach((cue, i) => {
+                let divDom = cue.getCueAsHTML();
+                divDom.dataset.startTime = cue.startTime;
+                divDom.title = `${i} : ${cue.startTime}-${cue.endTime}`;
+                divDom.style.top = cue.startTime + 'em';
+                vttDiv.append(divDom);
+            });
+        }
+
+
     </script>
-    <div id="overlay" style="position: relative; width: 300px; height: 150px"></div>
+
 </body>
 
 </html>
