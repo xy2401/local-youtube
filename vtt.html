@@ -12,6 +12,41 @@
         #keyI {
             width: 20%;
         }
+
+        .vttDiv1 {
+            float: left;
+        }
+
+        .vttDiv2 {
+            float: right;
+        }
+
+        .vttDiv1,
+        .vttDiv2 {
+            width: 50%;
+            position: relative;
+        }
+
+        .vttDiv1>div,
+        .vttDiv2>div {
+            position: absolute;
+        }
+
+
+        hr {
+            border: none;
+            border-top: 1px dashed #333;
+            text-align: right;
+            width: 100%;
+            position: absolute;
+            opacity: 0.5;
+        }
+
+        hr:after {
+            position: relative;
+            content: attr(data-content);
+            position: relative;
+        }
     </style>
 </head>
 
@@ -27,6 +62,7 @@
     </div>
     <div id='resultD'>
 
+
     </div>
     <div id='vttD'>
 
@@ -37,9 +73,11 @@
 
 
         let dirIValue = '', fileIValue = '';
+        //info 信息 dir 目录 vttDivs cuess
         let playlist = [];//播放列表
-        let playDirlist = [];//播放文件所在目录
-        let vtt1, vtt2, cues1 = [], cues2 = [];//字幕1 2
+        let vtt1, vtt2, cues1 = [], cues2 = []; //字幕1 2
+
+        let rHr = [];//
         let parser1 = new WebVTT.Parser(window, WebVTT.StringDecoder());
         parser1.oncue = (cue) => cues1.push(cue);
         let parser2 = new WebVTT.Parser(window, WebVTT.StringDecoder());
@@ -48,11 +86,56 @@
         function search() {
             loadVTT();
 
+            for (let i = 0; i < rHr.length; i++) {
+                rHr[i].remove();
+            }
+            rHr = [];
+
+            let html = '';
+
+            let keys = keyI.value.split('\n').filter(s => s.length > 0);
+            for (let i = 0; i < keys.length; i++) {
+
+                console.log("key " + keys[i]);
+
+                for (let j = 0; j < playlist.length; j++) {
+                    for (let k = 0; k < playlist[j].cuess.length; k++) {
+
+                        //每一个cue 字幕 变量名 l 1 傻傻分不清
+                        for (let c = 0; c < playlist[j].cuess[k].length; c++) {
+
+                            let cue = playlist[j].cuess[k][c];
+
+                            if (cue.text.indexOf(keys[i]) >= 0) {
+                                console.log(`${i}  ${j}  ${k}  ${c}  `);
+
+                                console.log(cue.text.indexOf(keys[i]) + cue.text);
+
+                                let hr = document.createElement('hr');
+                                rHr.push(hr);
+                                hr.title = keys[i] + cue.text;
+                                hr.id = `r${rHr.length}`;
+                                hr.style.top = `${cue.startTime - 0.5}em`;
+                                hr.dataset.content = hr.id;
+
+                                playlist[j].vttDivs[k].append(hr);
+
+                                html += ` <a href='#${hr.id}'>${cue.text}</a>`;
+
+                            }
+
+                        }
+
+                    }
+                }
+            }
+            resultD.innerHTML = html;
 
         }
         //加载字幕列表
         async function loadVTT() {
             if (dirIValue != dirI.value || fileIValue != fileI.value) {
+                cues3 = [];
                 playlist = [];
                 playDirlist = [];
                 //目录
@@ -63,42 +146,48 @@
                     playlistTxt = await playlistTxt.text();
                     playlistTxt.split("\n").filter(playlistJson => !/^\s*$/.test(playlistJson)).forEach(playlistJson => {
                         console.log(playlistJson);
-                        playlist.push(JSON.parse(playlistJson));
-                        playDirlist.push(dirs[i]);
+                        playlist.push({ info: JSON.parse(playlistJson), dir: dirs[i] });
                     });
                 }
                 //文件
                 fileIValue = fileI.value;
                 let files = fileIValue.split('\n').filter(s => s.length > 0);
                 if (files.length > 0) {//文件过滤
-                    playlist = playlist.filter(p => files.findIndex(f => p._filename.indexOf(f) >= 0) >= 0);
+                    playlist = playlist.filter(p => files.findIndex(f => p.info._filename.indexOf(f) >= 0) >= 0);
                 }
                 console.log('playlist ' + playlist.length);
                 playlist.forEach(p => console.log(p._filename));
 
                 let html = '';
                 for (let i = 0; i < playlist.length; i++) {
-                    let info = playlist[i];
+                    let info = playlist[i].info;
                     let name = info._filename.substr(0, info._filename.lastIndexOf('.'));
 
-                    vtt1 = await (await fetch(`../local-youtube-vtt/${playDirlist[i]}/${name}.en.vtt"`)).text();
-                    vtt2 = await (await fetch(`../local-youtube-vtt/${playDirlist[i]}/${name}.zh-Hans.vtt"`)).text();
+                    vtt1 = await (await fetch(`../local-youtube-vtt/${playlist[i].dir}/${name}.en.vtt`)).text();
+                    vtt2 = await (await fetch(`../local-youtube-vtt/${playlist[i].dir}/${name}.zh-Hans.vtt`)).text();
 
                     let details = document.createElement('details');
                     let summary = document.createElement('summary');
                     summary.textContent = name;
                     details.open = true;
-                    let div = document.createElement('div');
-                    div.textContent = '234';
 
                     details.append(summary);
-                    details.append(div);
 
-                    document.body.append(details);
+                    let vttDiv1 = document.createElement('div');
+                    let vttDiv2 = document.createElement('div');
 
-                    // updateVTT(parser1, cues1, vtt1, vttDiv1);
-                    // updateVTT(parser2, cues2, vtt2, vttDiv2);
-                    // cues1[0].getCueAsHTML().textContent;
+                    details.append(vttDiv1, vttDiv2);
+
+                    vttDiv1.className = 'vttDiv1';
+                    vttDiv2.className = 'vttDiv2';
+
+                    updateVTT(parser1, cues1, vtt1, vttDiv1);
+                    updateVTT(parser2, cues2, vtt2, vttDiv2);
+
+                    playlist[i].vttDivs = [vttDiv1, vttDiv2];
+                    playlist[i].cuess = [cues1.slice(), cues2.slice()];
+
+                    vttD.append(details);
 
                 }
 
@@ -108,18 +197,54 @@
         }
 
         function updateVTT(parser, cues, vtt, vttDiv) {
+            let divs = [];
             cues.length = 0;//清空
             parser.parse(vtt);
-            vttDiv.innerHTML = '';
-            cues.forEach((cue, i) => {
+
+            //字幕不存在 或者为空
+            if (cues.length == 0) {
+                return;
+            }
+
+            for (let i = 0; i < cues.length; i++) {
+                let cue = cues[i];
                 let divDom = cue.getCueAsHTML();
                 divDom.dataset.startTime = cue.startTime;
                 divDom.title = `${i} : ${cue.startTime}-${cue.endTime}`;
                 divDom.style.top = cue.startTime + 'em';
                 vttDiv.append(divDom);
-            });
+            }
+
+            let endTime = cues[cues.length - 1].endTime;
+            //创建分钟风格线 n min
+            let lineNum = Math.ceil(endTime / 60);
+            let html = "";
+            for (var i = 0; i < lineNum; i++) {
+                html += `<hr style='top: ${i * 60}em;'  data-content="${i} min" title='${i} min'>`;
+            }
+            vttDiv.style.height = (endTime + 10) + "em";
+
+
+            vttDiv.insertAdjacentHTML(`beforeend`, html);
+            //最后一个 hr 用来撑起 div 的高度
+
+            return divs;
         }
 
+
+        document.addEventListener('keydown', (event) => {
+            if (location.hash && location.hash.startsWith("#r")) {
+                let r = parseInt(location.hash.substr(2));
+                //上一个
+                if (event.key == 'a' || event.key == 'ArrowLeft') {
+                    location.hash = `r${--r}`;
+                }
+                //下一个
+                if (event.key == 'd' || event.key == 'ArrowRight') {
+                    location.hash = `r${++r}`;
+                }
+            }
+        }, false);
 
     </script>
 
