@@ -118,8 +118,8 @@
       <a id='webpage_url'>webpage_url</a> &nbsp;&nbsp;
       <a id='info_playlist_id'>playlist</a>&nbsp;&nbsp;
       <a id='href1'>English.vtt</a>&nbsp;&nbsp;
-      <a id='href2'>简体中文.vtt</a>
-
+      <a id='href2'>简体中文.vtt</a>&nbsp;&nbsp;
+      <a id='href3'>vtt list</a>&nbsp;&nbsp;
     </details>
 
 
@@ -226,6 +226,7 @@
           // href0.href = vttPath + name + ".info.json";
           href1.href = vttPath + name + ".en.vtt";
           href2.href = vttPath + name + ".zh-Hans.vtt";
+          href3.href = `vtt.html?dirIValue=${vttPath}`;
 
           updateVTT(parser1, cues1, vtt1, vttDiv1);
           updateVTT(parser2, cues2, vtt2, vttDiv2);
