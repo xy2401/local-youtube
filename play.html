@@ -190,7 +190,7 @@
 
       let playListNavHTML = '';
       playlist.forEach((v, i) => {
-        playListNavHTML += `<a href="#${i}" title='${v.upload_date}'>${i} ${v.title}</a>  `;
+        playListNavHTML += `<a href="#${i}" title='${v.upload_date}'>${i} ${v.title} ${v.id}</a>  `;
       });
       playListNav.innerHTML = playListNavHTML;
 
