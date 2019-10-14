@@ -170,8 +170,8 @@
                     let info = playlist[i].info;
                     let name = info._filename.substr(0, info._filename.lastIndexOf('.'));
 
-                    vtt1 = await (await fetch(`../local-youtube-vtt/${playlist[i].dir}/${name}.en.vtt`)).text();
-                    vtt2 = await (await fetch(`../local-youtube-vtt/${playlist[i].dir}/${name}.zh-Hans.vtt`)).text();
+                    vtt1 = await (await fetch(`../local-youtube-vtt/${playlist[i].dir}/${name}.en.vtt`, { cache: debug ? 'no-cache' : 'default' })).text();
+                    vtt2 = await (await fetch(`../local-youtube-vtt/${playlist[i].dir}/${name}.zh-Hans.vtt`, { cache: debug ? 'no-cache' : 'default' })).text();
 
                     let details = document.createElement('details');
                     let summary = document.createElement('summary');
@@ -253,16 +253,19 @@
             }
         }, false);
 
+        let debug = false;
         let windowsUrl = new URL(window.location.href);//当前路径url
         const load = () => {
+
+            debug = windowsUrl.searchParams.has('debug');
 
             let param;
             //将参数设置到页面元素中
             for (param of windowsUrl.searchParams) {
-                console.log('param '+param);
+                console.log('param ' + param);
                 if (param[1] && param[1].length > 0) {
                     let element = document.getElementsByName(param[0]);
-                    if (element && element.length>0) {
+                    if (element && element.length > 0) {
                         element[0].value = param[1];
                     }
                 }
