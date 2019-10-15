@@ -106,6 +106,9 @@
                 console.log("key " + keys[i]);
 
                 for (let j = 0; j < playlist.length; j++) {
+                    if (!playlist[j].cuess) {
+                        continue;
+                    }
                     for (let k = 0; k < playlist[j].cuess.length; k++) {
 
                         //每一个cue 字幕 变量名 l 1 傻傻分不清

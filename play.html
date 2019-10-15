@@ -319,8 +319,8 @@
       for (let i = 0; i < playlist.length; i++) {
         let v = playlist[i];
 
-        let name = v._filename.substr(0, v._filename.lastIndexOf('.'));
-        name = encodeURIComponent(name); //fileName has #
+        let _name = v._filename.substr(0, v._filename.lastIndexOf('.'));
+        name = encodeURIComponent(_name); //fileName has #
 
         //使用 head 而不必加载所有数据
         // [HEAD - HTTP | MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/HEAD)
@@ -346,8 +346,8 @@
 
         let extension = vWebmFlag ? 'webm' : vMkvFlag ? 'mkv' : 'mp4';
 
-        mv += `mv *${v.id}* "${name}.${extension}" \n`;//可能文件要重命名
-        mv2 += `mv *${v.id}* "${playlist.length - i}  ${name}.${extension}" \n`;//可能文件要重命名
+        mv += `mv *${v.id}* "${_name}.${extension}" \n`;//可能文件要重命名
+        mv2 += `mv *${v.id}* "${playlist.length - i}  ${_name}.${extension}" \n`;//可能文件要重命名
       }
 
       HTML += `\n\n`;
