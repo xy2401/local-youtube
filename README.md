@@ -29,5 +29,10 @@ youtube-dl --proxy=192.168.0.2:10809 -f  bestvideo+bestaudio https://www.youtube
 ##删除两个大节点
 cat playlist.txt | sed 's/, "formats": \[.*\], "is_live"/, "is_live"/g' |sed 's/, "requested_formats": \[.*\], "format"/, "format"/g' > playlist.lite.txt
 
+##转换字幕文件 为 ass
+for i in *.vtt ; do ffmpeg -i  "$i"  "ass/$i.ass" ; done
+
+
+
 ```
 
