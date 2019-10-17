@@ -347,8 +347,8 @@
 
         let extension = vWebmFlag ? 'webm' : vMkvFlag ? 'mkv' : 'mp4';
 
-        mv += `mv *${v.id}* "${_name}.${extension}" \n`;//可能文件要重命名
-        mv2 += `mv *${v.id}* "${playlist.length - i}  ${_name}.${extension}" \n`;//可能文件要重命名
+        mv += `mv *${v.id}* '${_name}.${extension}' \n`;//可能文件要重命名
+        mv2 += `mv *${v.id}* '${playlist.length - i}  ${_name}.${extension}' \n`;//可能文件要重命名
       }
 
       HTML += `\n\n`;
@@ -373,6 +373,8 @@
         }
       }
     }
+
+ 
 
   </script>
 </body>
