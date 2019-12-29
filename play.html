@@ -351,7 +351,7 @@
         mv += `mv *${v.id}* '${_name}.${extension}' \n`;//可能文件要重命名
         mv2 += `mv *${v.id}* '${playlist.length - i}  ${_name}.${extension}' \n`;//可能文件要重命名
 
-        mv3 += `mklink   "link\\${playlist.length - i}  ${_name}.${extension}" "..\\${_name}.${extension}"  \n`;
+        mv3 += `mklink   /H   "link\\${playlist.length - i}  ${_name}.${extension}" "${_name}.${extension}"  \n`;
       }
 
       HTML += `\n\n`;
