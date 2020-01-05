@@ -82,6 +82,7 @@
 
 
       <br>
+      <!--  -->
       <video id='video' controls style="height: 50vh;">
 
         <source id='source1' src="" type="video/webm">
@@ -91,6 +92,28 @@
         <track id='track2' default kind="subtitles" src="" srclang="zh-Hans" label="简体中文">
 
       </video>
+      <br>
+
+      <!-- 存放空音频文件获取其中的字幕 -->
+      <audio id="video2" muted>
+        <source id='video2_source1' src="" type="video/webm">
+        <source id='video2_source2' src="" type="video/mp4">
+        <source id='video2_source3' src="" type="video/mp4">
+        <track id='video2_track1' kind="subtitles" src="" srclang="en" label="English">
+        <track id='video2_track2' default kind="subtitles" src="" srclang="zh-Hans" label="简体中文">
+      </audio>
+
+      <details open style="background-color:#333333;color: white;">
+        <summary>English 字幕</summary>
+        <div id="en_activeCue" style="font-size: 1.5em;">en_activeCue</div>
+
+      </details>
+      <details open style="background-color: #333333;color: white;">
+        <summary>简体中文 字幕</summary>
+        <div id="zh_activeCue" style="font-size: 1.5em;">zh_activeCue</div>
+      </details>
+
+
 
 
     </details>
@@ -219,6 +242,17 @@
             source3.src = videoPath + name + ".mkv";
             track1.src = vttPath + name + ".en.vtt";
             track2.src = vttPath + name + ".zh-Hans.vtt";
+
+            //隐藏音频字幕  .src 获取的是带 http的绝对路径
+            video2_source1.src = source1.getAttribute('src');
+            video2_source2.src = source2.getAttribute('src');
+            video2_source3.src = source3.getAttribute('src');
+            video2_track1.src = track1.getAttribute('src');
+            video2_track2.src = track2.getAttribute('src');
+
+            video2.textTracks[0].mode = "showing";
+            video2.textTracks[1].mode = "showing";
+
           }
           vtt1 = await (await fetch(vttPath + name + ".en.vtt")).text();
           vtt2 = await (await fetch(vttPath + name + ".zh-Hans.vtt")).text();
@@ -232,6 +266,11 @@
 
           updateVTT(parser1, cues1, vtt1, vttDiv1);
           updateVTT(parser2, cues2, vtt2, vttDiv2);
+
+
+          //创建音频
+          // audio.src = generalAudioBase64(cues1[cues1.length - 1].endTime);
+
 
           //创建分钟风格线 n min
           let lineNum = Math.ceil(cues1[cues1.length - 1].startTime / 60);
@@ -265,10 +304,15 @@
           info_playlist_id.href = "https://www.youtube.com/playlist?list=" + vInfo.playlist_id;
 
           uploader.innerHTML = vInfo.uploader;
+
+
+
         }
       }
       video.load();
       video.play();
+      video2.load();
+      video2.play();
 
 
     }
@@ -315,8 +359,8 @@
 
       HTML += `playlist.length:${playlist.length}\n\n`;
 
-      let mv = '', mv2 = '' ,mv3='';
-      
+      let mv = '', mv2 = '', mv3 = '';
+
 
       for (let i = 0; i < playlist.length; i++) {
         let v = playlist[i];
@@ -377,6 +421,27 @@
           vttDiv2.style['margin-top'] = `-${video.currentTime}em`;
         }
       }
+      //音频视频不一致
+      if (video2.paused != video.paused) {
+        console.log('播放状态不一致');
+        video.paused ? video2.pause() : video2.play();
+      }
+      //音频更新到视频的时间轴
+      if (Math.abs(video2.currentTime - video.currentTime) > 1) {
+        console.log('播放时间不一致' + video2.currentTime + "  " + video.currentTime);
+        video2.currentTime = video.currentTime;
+      }
+
+
+      en_activeCue.innerHTML = "";
+      for (var i = 0; i < video2.textTracks[0].activeCues.length; i++) {
+        en_activeCue.innerHTML += video2.textTracks[0].activeCues[i].text.replace(/\n/g, '<br>') + "<br>";
+      }
+      zh_activeCue.innerHTML = "";
+      for (var i = 0; i < video2.textTracks[1].activeCues.length; i++) {
+        zh_activeCue.innerHTML += video2.textTracks[1].activeCues[i].text.replace(/\n/g, '<br>') + "<br>";
+      }
+
     }
 
  
