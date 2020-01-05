@@ -173,8 +173,12 @@
                     let info = playlist[i].info;
                     let name = info._filename.substr(0, info._filename.lastIndexOf('.'));
 
-                    vtt1 = await (await fetch(`../local-youtube-vtt/${playlist[i].dir}/${name}.en.vtt`, { cache: debug ? 'no-cache' : 'default' })).text();
-                    vtt2 = await (await fetch(`../local-youtube-vtt/${playlist[i].dir}/${name}.zh-Hans.vtt`, { cache: debug ? 'no-cache' : 'default' })).text();
+                    // vtt1 = await (await fetch(`../local-youtube-vtt/${playlist[i].dir}/${name}.en.vtt`, { cache: debug ? 'no-cache' : 'default' })).text();
+                    // vtt2 = await (await fetch(`../local-youtube-vtt/${playlist[i].dir}/${name}.zh-Hans.vtt`, { cache: debug ? 'no-cache' : 'default' })).text();
+ 
+                    vtt1 = await fetch(`../local-youtube-vtt/${playlist[i].dir}/${name}.en.vtt`, { cache: debug ? 'no-cache' : 'default' }).then(response => response.status == 200 ? response.text() : '');
+                    vtt2 = await fetch(`../local-youtube-vtt/${playlist[i].dir}/${name}.zh-Hans.vtt`, { cache: debug ? 'no-cache' : 'default' }).then(response => response.status == 200 ? response.text() : '');
+
 
                     let details = document.createElement('details');
                     let summary = document.createElement('summary');
