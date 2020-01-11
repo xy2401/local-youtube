@@ -55,6 +55,8 @@
     .right>div {
       right: 0em;
     }
+
+    #video {}
   </style>
   <title>play list</title>
 </head>
@@ -70,20 +72,20 @@
   </nav>
   <div id='contentDiv' style="width: 79%; float: left;">
 
-    <details open id='playerD' style="position: fixed;left: 30%;">
+    <details open id='playerD' style="position: fixed;width: 50vw;">
       <summary>player</summary>
 
       <button id='showAllVTTB' onclick="showAllVTT()">show all vtt</button>
-      height:
-      <input type="range" onchange="playerPlaceholder.style.height=video.style.height=this.value+'vh'" value="50">
-      left:
-      <input type="range" onchange="playerD.style.left=this.value+'%'" value="0" value="30">
+      width(1~100vw):
+      <input type="range" value="50" autocomplete="off" onchange="videoResize(this.value)">
+      <!-- left:
+      <input type="range" onchange="playerD.style.left=this.value+'%'" value="0" value="30"> -->
 
 
 
       <br>
       <!--  -->
-      <video id='video' controls style="height: 50vh;">
+      <video id='video' controls style="max-height: 95vh;width: 100%;">
 
         <source id='source1' src="" type="video/webm">
         <source id='source2' src="" type="video/mp4">
@@ -444,7 +446,18 @@
 
     }
 
- 
+    //调整视频大小
+    function videoResize(width) {
+      playerD.style.width = width + 'vw';
+      if (width > 80) {
+        playerD.style.marginLeft = "-" + (width - 80) + "vw";
+      } else {
+        playerD.style.marginLeft = "0px";
+      }
+      //默认单位px
+      playerPlaceholder.style.height = playerD.style.height + "px";
+    }
+
 
   </script>
 </body>
