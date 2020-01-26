@@ -55,8 +55,7 @@
     .right>div {
       right: 0em;
     }
-
-    #video {}
+ 
   </style>
   <title>play list</title>
 </head>
@@ -146,6 +145,7 @@
       <a id='href1'>English.vtt</a>&nbsp;&nbsp;
       <a id='href2'>简体中文.vtt</a>&nbsp;&nbsp;
       <a id='href3'>vtt list</a>&nbsp;&nbsp;
+      <a id='href4' style="font-weight: bold">NOTE</a>&nbsp;&nbsp;
     </details>
 
 
@@ -265,6 +265,7 @@
           href1.href = vttPath + name + ".en.vtt";
           href2.href = vttPath + name + ".zh-Hans.vtt";
           href3.href = `vtt.html?dirIValue=${vttPath}`;
+          href4.href = `../local-youtube-vtt/note#${info.id.toLowerCase()}`;
 
           updateVTT(parser1, cues1, vtt1, vttDiv1);
           updateVTT(parser2, cues2, vtt2, vttDiv2);
